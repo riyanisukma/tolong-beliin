@@ -10,15 +10,19 @@ import 'package:http/http.dart' as http;
 import 'package:platform_device_id/platform_device_id.dart';
 
 
-class ForgetPasswordScreen extends StatefulWidget {
+class ForgetPasswordScreenBaru extends StatefulWidget {
+  ForgetPasswordScreenBaru({required this.username, required this.status, required this.iddevice, required this.kodeotp});
+  String username;
+  String status;
+  String? iddevice;
+  String kodeotp;
   @override
-  ForgetPasswordScreenState createState() => ForgetPasswordScreenState();
-
+  ForgetPasswordScreenBaruState createState() => ForgetPasswordScreenBaruState();
 }
 
-class ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
-  final TextEditingController nameStoreController = TextEditingController();
-  bool validateNameStore = false;
+class ForgetPasswordScreenBaruState extends State<ForgetPasswordScreenBaru> {
+  final TextEditingController newpasswordController = TextEditingController();
+  bool validateNewPassword = false;
   // bool validatePassword = false;
   String? idDevice;
   void getDeviceIDUsingPlugin() async {
@@ -26,41 +30,49 @@ class ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
     idDevice = device.toString();
   }
 
-
-  submitForm (nameStoreController, idDevice ,context)  async {
-    String username = nameStoreController.text;
+  submitForm (newPasswordController, idDevice ,context)  async {
+    String username = widget.username;
+    String status = widget.status;
+    String? iddevice = widget.iddevice;
+    String kodeotp = widget.kodeotp;
+    String newPassword = newPasswordController.text;
 
     setState(() {
-      username.isEmpty ? validateNameStore = true  : validateNameStore = false;
+      newPassword.isEmpty ? validateNewPassword = true  : validateNewPassword = false;
 
     });
-    if(username.isNotEmpty ) {
-      http.Response response = await forgetPassword(username,idDevice);
-      print(response.body);
-      final data = json.decode(response.body);
-      if(data['status'].toString() == 'false') {
-        String errorMessage = data['message'];
-        showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                content: Text(errorMessage),
-              );
-            }
-        );
+    http.Response response;
+    if(newPassword.isNotEmpty ) {
+      if(status == 'setpassword') {
+        response = await setNewPassword(username,newPassword, idDevice, kodeotp);
+        print(response.body);
+        final data = json.decode(response.body);
+        if(data['status'].toString() == 'false') {
+          String errorMessage = data['message'];
+          showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  content: Text(errorMessage),
+                );
+              }
+          );
+        }
       }
+     // print(response.body);
+
       else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) =>  OtpScreen(username: username,status: "password")),
-        );
+      //  Navigator.push(
+       //   context,
+     //     MaterialPageRoute(builder: (context) =>  OtpScreen(username: username,status: "password")),
+      //  );
       }
 
     }
   }
 
-  Future<http.Response> forgetPassword(String fullname, String idDeviceDua) {
-    print("tes $idDeviceDua");
+  Future<http.Response> setNewPassword(String fullname, String newPassword, String idDevice, String kodeotp) {
+    print("tes $idDevice");
     return http.post(
       Uri.parse('https://dev.tolongbeliin.com/api/merchant/lupaPasswordKode'),
       headers: <String, String>{
@@ -68,7 +80,9 @@ class ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
       },
       body: jsonEncode(<String, String>{
         'fullname': fullname,
-        'iddevice': idDeviceDua,
+        'passBaru' : newPassword,
+        'iddevice': idDevice,
+        'kodeotp': kodeotp,
       }),
     );
   }
@@ -113,7 +127,7 @@ class ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                         child:  Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'Enter your name store:',
+                            'Enter new password:',
                             style: TextStyle(
                               color: Colors.grey.withOpacity(0.7),
                               fontWeight: FontWeight.w500,
@@ -123,9 +137,9 @@ class ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                         ),
                       ),
                       TextFormField(
-                        controller: nameStoreController,
+                        controller: newpasswordController,
                         decoration: InputDecoration(
-                          errorText:  validateNameStore ? "Enter your name store" : null,
+                          errorText:  validateNewPassword ? "Enter new password" : null,
                           enabledBorder: UnderlineInputBorder(
                               borderSide: BorderSide(
                                   color: Colors.black12
@@ -135,11 +149,6 @@ class ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                               borderSide: BorderSide(
                                   color: Colors.black12
                               )
-                          ),
-                          hintText: "Enter name store",
-                          hintStyle:  TextStyle(
-                            fontWeight: FontWeight.w400,
-                            color: Colors.black,
                           ),
                           contentPadding: EdgeInsets.symmetric(horizontal: 16),
                         ),
@@ -151,7 +160,7 @@ class ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                           width: 300,
                           height: 40,
                           onPressed: (){
-                            submitForm(nameStoreController, idDevice,context);
+                            submitForm(newpasswordController, idDevice,context);
                             //  Navigator.push(
                             //   context,
                             //   MaterialPageRoute(builder: (context) =>  VerificationScreen1()),

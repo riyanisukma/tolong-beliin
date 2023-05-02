@@ -1,15 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:homescreen/Product_list_screen.dart';
+import 'package:homescreen/component/utils/API_Utils.dart';
 import 'package:homescreen/login_screen.dart';
 
 import 'component/top/header.dart';
 import 'component/utils/primary_button.dart';
 
-class AdsScreen extends StatelessWidget {
-  const AdsScreen({Key? key}) : super(key: key);
+class ProductLoadScreen extends StatefulWidget {
+  ProductLoadScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ProductLoadScreen> createState() => _ProductLoadScreen();
+}
+
+class _ProductLoadScreen extends State<ProductLoadScreen> {
+  ApiUtils utils = ApiUtils();
+  String fullname= "Yudha";
+
 
   @override
   Widget build(BuildContext context) {
+    List<dynamic> dataMerchant =[];
+    void skip(context) {
+      if(dataMerchant.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProductListScreen(data: dataMerchant)),
+        );
+      }
+    }
     Size screen = MediaQuery.of(context).size;
+    utils.getProduct(fullname).then((value) {
+      dataMerchant = value.toList();
+    });
+
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
@@ -65,14 +89,11 @@ class AdsScreen extends StatelessWidget {
                           )
                       ),
                       PrimaryButton(
-                        text: "Skip",
-                        height: 23,
-                        width: 110,
+                          text: "Skip",
+                          height: 23,
+                          width: 110,
                           onPressed: (){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => LoginScreen()),
-                            );
+                            skip(context);
                           }
                       ),
 
